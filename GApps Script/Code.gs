@@ -11,6 +11,7 @@ function doGet() {
 
   for (var i = 0; i < events.length; i++) {
     var start = events[i].getStartTime();
+
     if (start > now) {
       nextEvent = events[i];
       break;
@@ -20,6 +21,10 @@ function doGet() {
   if (!nextEvent) {
     return ContentService.createTextOutput("No upcoming events");
   }
+
+  // Event info
+  var eventTitle = nextEvent.getTitle();
+  var eventLocation = nextEvent.getLocation() || "No location";
 
   var eventDate = Utilities.formatDate(
     nextEvent.getStartTime(),
@@ -33,9 +38,28 @@ function doGet() {
     "h:mm a"
   );
 
-  // Ottawa coordinates
-  var lat = 45.386522;
-  var lon = -75.696251;
+  var diffMs = nextEvent.getStartTime() - now;
+
+  var totalHours = diffMs / (1000 * 60 * 60);
+
+  var timeUntil;
+
+  if (totalHours < 1) {
+    timeUntil = "Now";
+  } else {
+    var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    var hours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    if (days >= 1) {
+      var remainingHours = hours % 24;
+      timeUntil = days + "d " + remainingHours + "h";
+    } else {
+      timeUntil = hours + "h";
+    }
+  }
+
+  var lat = 43.653482;
+  var lon = -79.383935;
 
   var weatherUrl =
     "https://api.open-meteo.com/v1/forecast?latitude=" +
@@ -48,20 +72,20 @@ function doGet() {
   var data = JSON.parse(response.getContentText());
 
   var temp = data.current_weather.temperature;
+  var windSpeed = data.current_weather.windspeed;
   var code = data.current_weather.weathercode;
 
-  var desc = getWeatherDesc(code);
+  var weatherState = getWeatherDesc(code);
 
   var result =
-    nextEvent.getTitle() +
-    ", " +
-    eventDate +
-    ", " +
-    eventTime +
-    ", " +
-    temp +
-    " C, " +
-    desc;
+    timeUntil + ", " +
+    eventTitle + ", " +
+    eventLocation + ", " +
+    eventDate + ", " +
+    eventTime + ", " +
+    weatherState + ", " +
+    temp + " C, " +
+    windSpeed + " km/h";
 
   return ContentService.createTextOutput(result);
 }
