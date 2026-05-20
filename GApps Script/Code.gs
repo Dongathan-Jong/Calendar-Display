@@ -3,18 +3,22 @@ function doGet() {
 
   var startSearch = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   var endSearch = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
   var calendar = CalendarApp.getDefaultCalendar();
   var events = calendar.getEvents(startSearch, endSearch);
 
+  Logger.log("Events found: " + events.length);
+
   var nextEvent = null;
+  var nextStart = null;
 
   for (var i = 0; i < events.length; i++) {
+    if (events[i].isAllDayEvent()) continue;
     var start = events[i].getStartTime();
-
     if (start > now) {
-      nextEvent = events[i];
-      break;
+      if (nextStart === null || start < nextStart) {
+        nextStart = start;
+        nextEvent = events[i];
+      }
     }
   }
 
@@ -22,30 +26,46 @@ function doGet() {
     return ContentService.createTextOutput("No upcoming events");
   }
 
-  // Event info
   var eventTitle = nextEvent.getTitle();
   var eventLocation = nextEvent.getLocation() || "No location";
+  var eventStart = nextEvent.getStartTime();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  var eventDate = Utilities.formatDate(
-    nextEvent.getStartTime(),
-    Session.getScriptTimeZone(),
-    "EEEE MMM d"
+  var eventDay = new Date(
+    eventStart.getFullYear(),
+    eventStart.getMonth(),
+    eventStart.getDate()
   );
 
+  var eventDate;
+
+  if (eventDay.getTime() === today.getTime()) {
+    eventDate = "Today";
+  } else if (eventDay.getTime() === tomorrow.getTime()) {
+    eventDate = "Tomorrow";
+  } else {
+    eventDate = Utilities.formatDate(
+      eventStart,
+      Session.getScriptTimeZone(),
+      "EEEE MMM d"
+    );
+  }
+
   var eventTime = Utilities.formatDate(
-    nextEvent.getStartTime(),
+    eventStart,
     Session.getScriptTimeZone(),
     "h:mm a"
   );
 
-  var diffMs = nextEvent.getStartTime() - now;
-
+  var diffMs = eventStart - now;
   var totalHours = diffMs / (1000 * 60 * 60);
 
   var timeUntil;
 
   if (totalHours < 1) {
-    timeUntil = "Now";
+    timeUntil = "NOW";
   } else {
     var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     var hours = Math.floor(diffMs / (1000 * 60 * 60));
