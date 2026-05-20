@@ -1,12 +1,11 @@
 #include <GxEPD2_BW.h>
 #include <SPI.h>
-#include <Fonts/FreeMonoBold9pt7b.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <esp_wpa2.h>
 #include <WiFiClientSecure.h>
 #include "centurygothic16pt7b.h"
 #include "centurygothic_bold16pt7b.h"
+#include "centurygothic24pt7b.h"
 
 #define EPD_CS   15
 #define EPD_DC   27
@@ -87,8 +86,17 @@ void setup()
   {
     epaper.setFont(&centurygothic_bold16pt7b);
     epaper.fillScreen(GxEPD_WHITE);
-    epaper.setCursor(250,250);
-    epaper.write("Connected to WiFi!");
+
+    for(int i = 20; i < 40; i++)
+    {
+      for(int j = 29; j < 148; j++)
+      {
+        if((i + j) % 2 == 0)
+        {
+          epaper.drawPixel(i, j, GxEPD_BLACK);
+        }
+      }
+    }
   }
   while(epaper.nextPage());
 
@@ -96,16 +104,35 @@ void setup()
 
 void loop()
 {
-  do
+  //TESTING
+
+  int currentIndex = 0;
+  int indicies[] = {0, 0, 0, 0, 0, 0, 0};
+  String payload = "14h, Flight to Chicago (UA 1990), Austin-Bergstrom Airport, Tomorrow, 10:00 AM, Cloudy, 14.8 C, 19.4 km/h";
+
+  for(int i = 0; i < payload.length(); i++)
   {
-    epaper.drawBitmap(100,100, locationSymbol, 30, 30, GxEPD_BLACK);
+    if (payload.charAt(i) == ',')
+    {
+      indicies[currentIndex] = i;
+      currentIndex++;
+    }
   }
-  while(epaper.nextPage());
-  //atAGlance();
+
+  eventData[0] = payload.substring(0, indicies[0]);
+  eventData[1] = payload.substring(indicies[0] + 2, indicies[1]);
+  eventData[2] = payload.substring(indicies[1] + 2, indicies[2]);
+  eventData[3] = payload.substring(indicies[2] + 2, indicies[3]);
+  eventData[4] = payload.substring(indicies[3] + 2, indicies[4]);
+  eventData[5] = payload.substring(indicies[4] + 2, indicies[5]);
+  eventData[6] = payload.substring(indicies[5] + 2, indicies[6]);
+  eventData[7] = payload.substring(indicies[6] + 2);
+  //updateData();
+  atAGlance();
   delay(50000000);
 }
 
-void updateBoard()
+void updateData()
 {
   int currentIndex = 0;
   int indicies[] = {0, 0, 0, 0, 0, 0, 0};
@@ -175,5 +202,40 @@ void connectingToWifi()
 
 void atAGlance()
 {
+  do
+  {
+    // draw until: 
+    epaper.setFont(&centurygothic_bold16pt7b);
+    if(eventData[0] != "Now")
+    {
+      epaper.setCursor(50, 50);
+      epaper.write("In ");
+      epaper.write(eventData[0].c_str());
+      epaper.write(", ");
+      epaper.write(eventData[3].c_str());
+      epaper.write(" at ");
+      epaper.write(eventData[4].c_str());
+    }
+    else
+    {
+      epaper.setCursor(50, 50);
+      epaper.write(eventData[0].c_str());
+    }
 
+    // draw next event
+    epaper.setFont(&centurygothic24pt7b);
+    epaper.setCursor(48,100);
+    epaper.write(eventData[1].c_str());
+
+    // draw event location
+    epaper.setFont(&centurygothic16pt7b);
+    epaper.drawBitmap(48, 120, locationSymbol, 30, 30, GxEPD_BLACK);
+    epaper.setTextSize(1);
+    epaper.setCursor(85, 145);
+    epaper.write(eventData[2].c_str());
+
+    // draw event Date + Time
+    //epaper.draw
+  }
+  while(epaper.nextPage());
 }
