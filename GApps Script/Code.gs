@@ -3,6 +3,7 @@ function doGet() {
 
   var startSearch = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   var endSearch = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
   var calendar = CalendarApp.getDefaultCalendar();
   var events = calendar.getEvents(startSearch, endSearch);
 
@@ -29,6 +30,7 @@ function doGet() {
   var eventTitle = nextEvent.getTitle();
   var eventLocation = nextEvent.getLocation() || "No location";
   var eventStart = nextEvent.getStartTime();
+
   var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   var tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -65,7 +67,7 @@ function doGet() {
   var timeUntil;
 
   if (totalHours < 1) {
-    timeUntil = "NOW";
+    timeUntil = "Now";
   } else {
     var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     var hours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -97,6 +99,13 @@ function doGet() {
 
   var weatherState = getWeatherDesc(code);
 
+  // ✅ Added current time as last entry
+  var currentTime = Utilities.formatDate(
+    now,
+    Session.getScriptTimeZone(),
+    "h:mm a"
+  );
+
   var result =
     timeUntil + ", " +
     eventTitle + ", " +
@@ -105,7 +114,8 @@ function doGet() {
     eventTime + ", " +
     weatherState + ", " +
     temp + " C, " +
-    windSpeed + " km/h";
+    windSpeed + " km/h, " +
+    currentTime;
 
   return ContentService.createTextOutput(result);
 }
