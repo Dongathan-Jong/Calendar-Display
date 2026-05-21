@@ -25,14 +25,14 @@ Note that the first stock is made to be a 2 digit stock, while the second and th
 You are free to change it to whatever you'd like, however a lot of the drawings are hardcoded to the digits, so you may have to tinker around with the coordinates. On lines 2004, 2052, and 2100 are where you can change the name of stock that is written on the display.   
 
 ##### Icons
-To change the icons, I used [this tutorial](https://www.instructables.com/Converting-Images-to-Flash-Memory-Iconsimages-for-/) to convert images into bitmaps. I used the FastStone Image Resizer to resize the images and the lcd-image-converter with the settings: (monochrome, threshold dither, and inverse) to get the bitmaps. You can add your own in the top! 
+To change the icons, I used [this tutorial](https://www.instructables.com/Converting-Images-to-Flash-Memory-Iconsimages-for-/) to convert images into bitmaps. I used the FastStone Image Resizer to resize the images and the lcd-image-converter with the settings: (monochrome, threshold dither, and inverse) to get the bitmaps. You can add your own in the top!  
 
 ##### Fonts
-I really like this font that I'm using right now, but you're free to use your own. To change the font, get the .ttf from somewhere, and go here: https://rop.nl/truetype2gfx/. Upload your .ttf, and press upload, and download the following sizes: 
+I really like this font that I'm using right now, but you're free to use your own. To change the font, get the .ttf from somewhere, and go here: https://rop.nl/truetype2gfx/. Upload your .ttf, and press upload, and download the following sizes:  
 - 8 pt
 - 16 pt
 - 16 pt bold
-- 24 pt
+- 24 pt  
 Drop those files into the same folder as your code! 
 
 ### Whats Next?
