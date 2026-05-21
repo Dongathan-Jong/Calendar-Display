@@ -1471,9 +1471,6 @@ GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> epaper(
   GxEPD2_750_T7(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY)
 );
 
-const char* ssid = "NETGEAR80";
-const char* password = "tinybanana043";
-const char* appsScript = "https://script.google.com/macros/s/AKfycbwiEFkQsoogf6oexqu7GVOn-kRUwxzUu_6rbWz9aDI55cxtyWgNtvJNKsPG-f-8_MD7Xg/exec";
 
 String eventData[] = {"", "", "", "", "", "", "", ""};
 
