@@ -33,6 +33,7 @@ I really like this font that I'm using right now, but you're free to use your ow
 - 16 pt
 - 16 pt bold
 - 24 pt  
+
 Drop those files into the same folder as your code! 
 
 ### Whats Next?
