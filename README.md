@@ -14,11 +14,14 @@ Here are the following parts I'm using:
 - $1 - $5 | 3x Cherry MX Switches
   
 ### Setup & Customization
-First, head over to http://script.google.com/ and create a new script! Paste in the code under the GApps Script folder, and change lines 83 and 84 to the correct coordinates of your location to get the proper weather. 
-Next, deploy the script, and get the link that resembles https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec
-In arduino IDE or any IDE, input your link on line 1647, and the WiFi credentials on line 1645 and 1646. 
-To change the stocks that you are watching, head over to http://finnhub.io/ and get a API key. Insert that API key on lines 1754, 1780, and 1806. To change the ticker of the stock, change the stock ticker in the same line that the api key was put on. 
+##### Google Apps Script Setup 
+First, head over to http://script.google.com/ and create a new script! Paste in the code under the GApps Script folder, and change lines 83 and 84 to the correct coordinates of your location to get the proper weather.   
+Next, deploy the script, and get the link that resembles https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec  
+
+##### Code Setup
+In arduino IDE or any IDE, input your link on line 1647, and the WiFi credentials on line 1645 and 1646.   
+To change the stocks that you are watching, head over to http://finnhub.io/ and get a API key. Insert that API key on lines 1754, 1780, and 1806. To change the ticker of the stock, change the stock ticker in the same line that the api key was put on.   
 Note that the first stock is made to be a 2 digit stock, while the second and third stock is made to be 3 digit stocks. Ex. 2 digits = $12.00, 3 digits = $123.00.
-You are free to change it to whatever you'd like, however a lot of the drawings are hardcoded to the digits, so you may have to tinker around with the coordinates. On lines 2004, 2052, and 2100 are where you can change the name of stock that is written on the display. 
+You are free to change it to whatever you'd like, however a lot of the drawings are hardcoded to the digits, so you may have to tinker around with the coordinates. On lines 2004, 2052, and 2100 are where you can change the name of stock that is written on the display.   
 
 ### Whats Next?
