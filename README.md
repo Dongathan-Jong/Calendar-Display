@@ -1,5 +1,5 @@
 # Calendar Dashboard
-<img width="2326" height="1615" alt="Display_Case_2026-May-13_07-05-28PM-000_CustomizedView21459932709_png" src="https://github.com/user-attachments/assets/b20602f8-7cbd-4790-bde0-ddf8f9e87abf" />
+<img width="3364" height="2358" alt="Dashboard" src="https://github.com/user-attachments/assets/8192f9e9-e9d4-443c-a9f1-489d87e43d05" />
 
 ### Inspiration
 I really liked the TRMNL dashboard, but after finding out their proprietary firmware was locked behind a paywall, I decided to build my own! I originally bought the epaper display thinking the firmware was free, since it was open source. With the parts in hand, I decided to code the firmware myself to what I like. The display consists of 3 main parts:
