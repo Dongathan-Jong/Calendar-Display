@@ -1,0 +1,4 @@
+Item,Part Number,Description,Quantity,Unit Cost (USD),Extended Cost (USD),Supplier,Link
+1,7.5inch-HD-e-Paper-HAT,7.5inch HD e-Paper E-Ink Display,1,61.99,61.99,Waveshare,https://www.waveshare.com/7.5inch-hd-e-paper-hat.htm
+2,ESP32-EPD-Driver-Board,ESP32 EPD Driver Board,1,14.99,14.99,Waveshare,https://www.waveshare.com/e-paper-esp32-driver-board.htm
+3,Cherry-MX,Cherry MX Switch,3,1.00-5.00,3.00-15.00,Various,N/A
