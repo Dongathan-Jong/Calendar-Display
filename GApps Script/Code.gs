@@ -23,6 +23,8 @@ function doGet() {
     }
   }
 
+
+
   if (!nextEvent) {
     return ContentService.createTextOutput("No upcoming events");
   }
