@@ -1638,12 +1638,13 @@ const unsigned char downArrow[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+
 GxEPD2_BW<GxEPD2_750_T7, GxEPD2_750_T7::HEIGHT> epaper(
   GxEPD2_750_T7(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY)
 );
 
-const char* ssid = "";
-const char* password = "";
+const char* ssid = ""; 
+const char* password = ""; 
 const char* appsScript = "";
 
 String eventData[] = {"", "", "", "", "", "", "", "", ""};
@@ -1666,22 +1667,7 @@ void setup()
   epaper.setFullWindow();
   epaper.firstPage();
 
-  do
-  {
-    epaper.fillScreen(GxEPD_WHITE);
-    epaper.setCursor(250,250);
-    epaper.write("Connecting to WiFi");
-  }
-  while(epaper.nextPage());
-
   connectingToWifi();
-
-  do
-  {
-    epaper.setFont(&centurygothic_bold16pt7b);
-    epaper.fillScreen(GxEPD_WHITE);
-  }
-  while(epaper.nextPage());
 
 }
 
@@ -1690,7 +1676,11 @@ void loop()
   getStock();
   updateData();
   atAGlance();
-  delay(500000000);
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  Serial.println("sleeping");
+  esp_sleep_enable_timer_wakeup(300 * 1000000);
+  esp_deep_sleep_start();
 }
 
 void updateData()
@@ -1848,6 +1838,7 @@ void atAGlance()
 {
   do
   {
+    epaper.fillScreen(GxEPD_WHITE);
     //draw calendar update bar
     for(int i = 19; i < 40; i++)
     {
@@ -2042,7 +2033,7 @@ void atAGlance()
     {
       epaper.drawBitmap(450, 372, upArrow, 81, 81, GxEPD_BLACK);
     }
-    else if(stockData1[1] < 0)
+    else if(stockData2[1] < 0)
     {
       epaper.drawBitmap(450, 372, downArrow, 81, 81, GxEPD_BLACK);
     }
@@ -2057,7 +2048,7 @@ void atAGlance()
     epaper.setCursor(320, 450);
     epaper.setFont(&centurygothic8pt7b);
 
-    if(stockData1[1] > 0)
+    if(stockData2[1] > 0)
     {
       epaper.write("+$");
       epaper.write(String(stockData2[1]).c_str());
