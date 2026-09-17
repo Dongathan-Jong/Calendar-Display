@@ -1063,7 +1063,7 @@ const unsigned char fog[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-
+  
 const unsigned char clear[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -1648,6 +1648,7 @@ const char* password = "";
 const char* appsScript = "";
 
 String eventData[] = {"", "", "", "", "", "", "", "", ""};
+String dueData[] = {"", "", "", "", "", "", "", "", "", ""};
 float stockData1[] = {0, 0, 0, 0, 0, 0, 0};
 float stockData2[] = {0, 0, 0, 0, 0, 0, 0};
 float stockData3[] = {0, 0, 0, 0, 0, 0, 0};
@@ -1666,27 +1667,28 @@ void setup()
   epaper.setTextColor(GxEPD_BLACK);
   epaper.setFullWindow();
   epaper.firstPage();
-
   connectingToWifi();
-
-}
-
-void loop()
-{
   getStock();
   updateData();
   atAGlance();
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
   Serial.println("sleeping");
-  esp_sleep_enable_timer_wakeup(300 * 1000000);
+  esp_sleep_enable_timer_wakeup(900 * 1000000);
   esp_deep_sleep_start();
+}
+
+void loop()
+{
+  
 }
 
 void updateData()
 {
   int currentIndex = 0;
-  int indicies[] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int indicies[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int dueIndicies[] = {0, 0, 0, 0, 0, 0, 0, 0};
+  String upcomingDues = "";
 
   String payload = "";
   http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
@@ -1715,26 +1717,73 @@ void updateData()
       currentIndex++;
     }
   }
-  
-  for(int i = 0; i < 7; i++)
+
+  int changeData = 0;
+  for(int i = 0; i < payload.length(); i++)
+  {
+    if(payload.charAt(i) == ',')
+    {
+      changeData++;
+    }
+  }
+
+  Serial.print("ChangeData val: ");
+  Serial.println(changeData);
+
+  for(int i = 0; i < 8; i++)
   {
     Serial.println(indicies[i]);
   }
 
-  eventData[0] = payload.substring(0, indicies[0]);
-  eventData[1] = payload.substring(indicies[0] + 2, indicies[1]);
-  eventData[2] = payload.substring(indicies[1] + 2, indicies[2]);
-  eventData[3] = payload.substring(indicies[2] + 2, indicies[3]);
-  eventData[4] = payload.substring(indicies[3] + 2, indicies[4]);
-  eventData[5] = payload.substring(indicies[4] + 2, indicies[5]);
-  eventData[6] = payload.substring(indicies[5] + 2, indicies[6]);
-  eventData[7] = payload.substring(indicies[6] + 2, indicies[7]);
-  eventData[8] = payload.substring(indicies[7] + 2);
-  
-  for(int i = 0; i < 8; i++)
+  if(changeData > 5)
   {
-    Serial.println(eventData[i]);
+    eventData[0] = payload.substring(0, indicies[0]);
+    eventData[1] = payload.substring(indicies[0] + 2, indicies[1]);
+    eventData[2] = payload.substring(indicies[1] + 2, indicies[2]);
+    eventData[3] = payload.substring(indicies[2] + 2, indicies[3]);
+    eventData[4] = payload.substring(indicies[3] + 2, indicies[4]);
+    eventData[5] = payload.substring(indicies[4] + 2, indicies[5]);
+    eventData[6] = payload.substring(indicies[5] + 2, indicies[6]);
+    eventData[7] = payload.substring(indicies[6] + 2, indicies[7]);
+    eventData[8] = payload.substring(indicies[7] + 2, indicies[8]);
+    upcomingDues = payload.substring(indicies[8] + 2);
   }
+  else
+  {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    Serial.println("sleeping");
+    esp_sleep_enable_timer_wakeup(900 * 1000000);
+    esp_deep_sleep_start();
+  }
+  
+  currentIndex = 0;
+
+  for(int i = 0; i < upcomingDues.length(); i++)
+  {
+    if(upcomingDues.charAt(i) == '|')
+    {
+      dueIndicies[currentIndex] = i;
+      currentIndex++;
+    }  
+  }
+
+  dueData[0] = upcomingDues.substring(0, dueIndicies[0]);
+  dueData[1] = upcomingDues.substring(dueIndicies[0] + 2, dueIndicies[1]);
+  dueData[2] = upcomingDues.substring(dueIndicies[1] + 2, dueIndicies[2]);
+  dueData[3] = upcomingDues.substring(dueIndicies[2] + 2, dueIndicies[3]);
+  dueData[4] = upcomingDues.substring(dueIndicies[3] + 2, dueIndicies[4]);
+  dueData[5] = upcomingDues.substring(dueIndicies[4] + 2, dueIndicies[5]);
+  dueData[6] = upcomingDues.substring(dueIndicies[5] + 2, dueIndicies[6]);
+  dueData[7] = upcomingDues.substring(dueIndicies[6] + 2, dueIndicies[7]);
+  dueData[8] = upcomingDues.substring(dueIndicies[7] + 2, dueIndicies[8]);
+  dueData[9] = upcomingDues.substring(dueIndicies[8] + 2);
+
+  for(int i = 0; i < 10; i++)
+  {
+    Serial.println(dueData[i]);
+  }
+  
 }
 
 void getStock()
@@ -1968,6 +2017,43 @@ void atAGlance()
     epaper.setCursor(283, 335);
     epaper.write("Winds: ");
     epaper.write(eventData[7].c_str());
+
+    epaper.setFont(&centurygothic16pt7b);
+    epaper.setCursor(605, 150);
+    epaper.write("Due Soon:");
+    //Dues
+    for(int i = 575; i < 596; i++)
+    {
+      for(int j = 155; j < 355; j++)
+      {
+        if((i + j) % 2 == 0)
+        {
+          epaper.drawPixel(i, j, GxEPD_BLACK);
+        }
+      }
+    }
+    epaper.setCursor(605, 170);
+    epaper.setFont(&centurygothic8pt7b);
+    epaper.write(dueData[0].c_str());
+    epaper.setCursor(605, 185);
+    epaper.write(dueData[1].c_str());
+    epaper.setCursor(605, 210);
+    epaper.write(dueData[2].c_str());
+    epaper.setCursor(605, 225);
+    epaper.write(dueData[3].c_str());
+    epaper.setCursor(605, 250);
+    epaper.write(dueData[4].c_str());
+    epaper.setCursor(605, 265);
+    epaper.write(dueData[5].c_str());
+    epaper.setCursor(605, 290);
+    epaper.write(dueData[6].c_str());
+    epaper.setCursor(605, 305);
+    epaper.write(dueData[7].c_str());
+    epaper.setCursor(605, 330);
+    epaper.write(dueData[8].c_str());
+    epaper.setCursor(605, 345);
+    epaper.write(dueData[9].c_str());
+
 
     for(int i = 19; i < 40; i++)
     {
