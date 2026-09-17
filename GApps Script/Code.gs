@@ -1,11 +1,25 @@
 function doGet() {
   var now = new Date();
 
-  var startSearch = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  var endSearch = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  var startSearch = new Date(
+    now.getTime() - 7 * 24 * 60 * 60 * 1000
+  );
 
-  var calendar = CalendarApp.getDefaultCalendar();
-  var events = calendar.getEvents(startSearch, endSearch);
+  var endSearch = new Date(now);
+  endSearch.setMonth(endSearch.getMonth() + 3);
+
+  var defaultCalendar = CalendarApp.getDefaultCalendar();
+  var carletonCalendars = CalendarApp.getCalendarsByName("carleton");
+
+  var events = [];
+
+  events = events.concat(defaultCalendar.getEvents(startSearch, endSearch));
+
+  if (carletonCalendars.length > 0) {
+    events = events.concat(
+      carletonCalendars[0].getEvents(startSearch, endSearch)
+    );
+  }
 
   Logger.log("Events found: " + events.length);
 
@@ -13,9 +27,14 @@ function doGet() {
   var nextStart = null;
 
   for (var i = 0; i < events.length; i++) {
-    if (events[i].isAllDayEvent()) continue;
+    if (events[i].isAllDayEvent()) {
+      continue;
+    }
+
     var start = events[i].getStartTime();
-    if (start > now) {
+
+    if (start > now)
+    {
       if (nextStart === null || start < nextStart) {
         nextStart = start;
         nextEvent = events[i];
@@ -23,17 +42,26 @@ function doGet() {
     }
   }
 
-
-
-  if (!nextEvent) {
-    return ContentService.createTextOutput("No upcoming events");
+  if (!nextEvent) 
+  {
+    return ContentService.createTextOutput(
+      "No upcoming events"
+    );
   }
 
   var eventTitle = nextEvent.getTitle();
-  var eventLocation = nextEvent.getLocation() || "No location";
+
+  var eventLocation =
+    nextEvent.getLocation() || "No location";
+
   var eventStart = nextEvent.getStartTime();
 
-  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var today = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
   var tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -47,8 +75,10 @@ function doGet() {
 
   if (eventDay.getTime() === today.getTime()) {
     eventDate = "Today";
+
   } else if (eventDay.getTime() === tomorrow.getTime()) {
     eventDate = "Tomorrow";
+
   } else {
     eventDate = Utilities.formatDate(
       eventStart,
@@ -64,26 +94,40 @@ function doGet() {
   );
 
   var diffMs = eventStart - now;
-  var totalHours = diffMs / (1000 * 60 * 60);
+
+  var totalHours =
+    diffMs / (1000 * 60 * 60);
 
   var timeUntil;
 
   if (totalHours < 1) {
     timeUntil = "Now";
+
   } else {
-    var days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    var hours = Math.floor(diffMs / (1000 * 60 * 60));
+    var days = Math.floor(
+      diffMs / (1000 * 60 * 60 * 24)
+    );
+
+    var hours = Math.floor(
+      diffMs / (1000 * 60 * 60)
+    );
 
     if (days >= 1) {
       var remainingHours = hours % 24;
-      timeUntil = days + "d " + remainingHours + "h";
+
+      timeUntil =
+        days +
+        "d " +
+        remainingHours +
+        "h";
+
     } else {
       timeUntil = hours + "h";
     }
   }
 
-  var lat = 43.653482;
-  var lon = -79.383935;
+  var lat = 45.369213;
+  var lon = -75.72164;
 
   var weatherUrl =
     "https://api.open-meteo.com/v1/forecast?latitude=" +
@@ -93,52 +137,141 @@ function doGet() {
     "&current_weather=true";
 
   var response = UrlFetchApp.fetch(weatherUrl);
-  var data = JSON.parse(response.getContentText());
 
-  var temp = data.current_weather.temperature;
-  var windSpeed = data.current_weather.windspeed;
-  var code = data.current_weather.weathercode;
+  var data = JSON.parse(
+    response.getContentText()
+  );
 
-  var weatherState = getWeatherDesc(code);
+  var temp =
+    data.current_weather.temperature;
 
-  // ✅ Added current time as last entry
+  var windSpeed =
+    data.current_weather.windspeed;
+
+  var code =
+    data.current_weather.weathercode;
+
+  var weatherState =
+    getWeatherDesc(code);
+
   var currentTime = Utilities.formatDate(
     now,
     Session.getScriptTimeZone(),
     "h:mm a"
   );
 
-  var result =
-    timeUntil + ", " +
-    eventTitle + ", " +
-    eventLocation + ", " +
-    eventDate + ", " +
-    eventTime + ", " +
-    weatherState + ", " +
-    temp + " C, " +
-    windSpeed + " km/h, " +
-    currentTime;
+  // --- Next 5 Sage colored events (includes all-day events) ---
 
-  return ContentService.createTextOutput(result);
+  var targetColor = CalendarApp.EventColor.PALE_GREEN; // Sage
+
+  var futureColorEvents = events.filter(function(e) {
+    if (e.getColor() !== targetColor) {
+      return false;
+    }
+
+    if (e.isAllDayEvent()) {
+      // all-day events start at midnight, so use start-of-day comparison
+      var eDay = new Date(
+        e.getStartTime().getFullYear(),
+        e.getStartTime().getMonth(),
+        e.getStartTime().getDate()
+      );
+
+      var todayForFilter = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+
+      return eDay >= todayForFilter;
+    }
+
+    return e.getStartTime() > now;
+  });
+
+  futureColorEvents.sort(function(a, b) {
+    return a.getStartTime() - b.getStartTime();
+  });
+
+  var next5ColorEvents = futureColorEvents.slice(0, 5);
+
+  var monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"
+  ];
+
+  var colorEventLines = next5ColorEvents.map(function(e) {
+    var eStart = e.getStartTime();
+    var eDateStr = monthNames[eStart.getMonth()] + " " + eStart.getDate();
+    return eDateStr + " | " + e.getTitle();
+  });
+
+  var colorEventsResult = colorEventLines.length > 0
+    ? colorEventLines.join(" | ")
+    : "No upcoming Sage events";
+
+  // --- end section ---
+
+  var result =
+    timeUntil +
+    ", " +
+    eventTitle +
+    ", " +
+    eventLocation +
+    ", " +
+    eventDate +
+    ", " +
+    eventTime +
+    ", " +
+    weatherState +
+    ", " +
+    temp +
+    " C, " +
+    windSpeed +
+    " km/h, " +
+    currentTime +
+    ", " +
+    colorEventsResult;
+
+  return ContentService.createTextOutput(
+    result
+  );
 }
 
+
 function getWeatherDesc(code) {
+
   var map = {
     0: "Clear",
+
     1: "Mostly clear",
+
     2: "Partly cloudy",
+
     3: "Cloudy",
+
     45: "Fog",
+
     48: "Fog",
+
     51: "Light drizzle",
+
     53: "Drizzle",
+
     55: "Heavy drizzle",
+
     61: "Light rain",
+
     63: "Rain",
+
     65: "Heavy rain",
+
     71: "Light snow",
+
     73: "Snow",
+
     75: "Heavy snow",
+
     95: "Thunderstorm"
   };
 
