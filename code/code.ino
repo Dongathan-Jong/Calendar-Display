@@ -1653,6 +1653,8 @@ float stockData1[] = {0, 0, 0, 0, 0, 0, 0};
 float stockData2[] = {0, 0, 0, 0, 0, 0, 0};
 float stockData3[] = {0, 0, 0, 0, 0, 0, 0};
 
+
+
 WiFiClientSecure client;
 HTTPClient http;
 
